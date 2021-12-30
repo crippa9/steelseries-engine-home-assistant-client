@@ -11,5 +11,10 @@
     "parser": "@typescript-eslint/parser",
     "ecmaVersion": 12,
     "sourceType": "module"
+  },
+  "rules": {
+    "quotes": ["warn", "double"],
+    "no-unused-vars": "warn",
+    "comma-dangle": "off"
   }
 }

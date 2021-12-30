@@ -1,20 +1,59 @@
 import React, { useEffect, useState } from "react";
+import type { RgbColor } from "./api/use-gamesense";
 import useGameSense, { Status } from "./api/use-gamesense";
+import type { RGBColor } from "react-color";
+import { CirclePicker } from "react-color";
+
+const reactColorToHookColor = (reactColor: RGBColor): RgbColor => ({
+  red: reactColor.r,
+  green: reactColor.g,
+  blue: reactColor.b,
+});
+
+type ZoneColorPickerProps = {
+  setColor: (color: RGBColor) => void;
+  color: RGBColor;
+  title: string;
+};
+
+function ZoneColorPicker({ setColor, color, title }: ZoneColorPickerProps) {
+  return (
+    <div>
+      <h2>{title}</h2>
+      <p>TODO: Add ability to send blink events to zone</p>
+      <CirclePicker
+        color={color}
+        onChangeComplete={(colorResult) => setColor(colorResult.rgb)}
+      />
+    </div>
+  );
+}
 
 const App: React.FC = () => {
-  const [health, setHealth] = useState<number>(0);
-  const [binderValue, setBinderValue] = useState<number>(0);
-
-  const {
-    onHealthUpdateAsync,
-    onBinderUpdateAsync,
-    onResetGameSetupAsync,
-    status,
-  } = useGameSense();
+  const [zoneOneColor, setZoneOneColor] = useState<RGBColor>({
+    r: 0,
+    g: 0,
+    b: 0,
+  });
+  const [zoneTwoColor, setZoneTwoColor] = useState<RGBColor>({
+    r: 0,
+    g: 0,
+    b: 0,
+  });
+  const [zoneThreeColor, setZoneThreeColor] = useState<RGBColor>({
+    r: 0,
+    g: 0,
+    b: 0,
+  });
+  const { onBinderUpdateAsync, onResetGameSetupAsync, status } = useGameSense();
 
   useEffect(() => {
-    onBinderUpdateAsync(binderValue);
-  }, [binderValue, onBinderUpdateAsync]);
+    onBinderUpdateAsync([
+      reactColorToHookColor(zoneOneColor),
+      reactColorToHookColor(zoneTwoColor),
+      reactColorToHookColor(zoneThreeColor),
+    ]);
+  }, [zoneOneColor, zoneTwoColor, zoneThreeColor, onBinderUpdateAsync]);
 
   return (
     <>
@@ -30,31 +69,21 @@ const App: React.FC = () => {
               Reset game setup
             </button>
           </div>
-          <div>
-            <input
-              type="number"
-              max={100}
-              min={0}
-              value={health}
-              onChange={({ target }) =>
-                setHealth(Number.parseFloat(target.value))
-              }
-            />
-            <button onClick={() => onHealthUpdateAsync(health)}>
-              Send health event
-            </button>
-          </div>
-          <div>
-            <input
-              type="number"
-              max={100}
-              min={0}
-              value={binderValue}
-              onChange={({ target }) =>
-                setBinderValue(Number.parseFloat(target.value))
-              }
-            />
-          </div>
+          <ZoneColorPicker
+            title="Zone 1"
+            setColor={setZoneOneColor}
+            color={zoneOneColor}
+          />
+          <ZoneColorPicker
+            title="Zone 2"
+            setColor={setZoneTwoColor}
+            color={zoneTwoColor}
+          />
+          <ZoneColorPicker
+            title="Zone 3"
+            setColor={setZoneThreeColor}
+            color={zoneThreeColor}
+          />
         </>
       ) : (
         <>Steelseries Game Engine not running</>

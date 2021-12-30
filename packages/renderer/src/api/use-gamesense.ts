@@ -13,7 +13,7 @@ const BinderEventIdentifier = "BINDER";
 
 // Device settings
 const MsiCq = "msi-mpg341cq";
-const RgbZonedDevice = "rgb-zoned-device";
+// const RgbZonedDevice = "rgb-zoned-device";
 const DeviceType = MsiCq;
 
 const ContextFrameZoneOneKey = "zone-one-context";
@@ -28,8 +28,13 @@ type EventData = {
 };
 type ContextEventData = {
   event: string;
-  value: number;
   frame: object;
+};
+
+export type RgbColor = {
+  red: number;
+  green: number;
+  blue: number;
 };
 
 export enum Status {
@@ -41,7 +46,7 @@ export enum Status {
 type ReturnType = {
   status: Status;
   onHealthUpdateAsync: (value: number) => Promise<void>;
-  onBinderUpdateAsync: (value: number) => Promise<void>;
+  onBinderUpdateAsync: (zoneColors: RgbColor[]) => Promise<void>;
   onResetGameSetupAsync: () => Promise<void>;
 };
 const useGameSense = (): ReturnType => {
@@ -173,7 +178,6 @@ const useGameSense = (): ReturnType => {
           game: GameIdentifier,
           event: eventData.event,
           data: {
-            value: eventData.value,
             frame: eventData.frame,
           },
         }),
@@ -181,7 +185,7 @@ const useGameSense = (): ReturnType => {
     }
   );
 
-  const {} = useQuery(
+  useQuery(
     ["heartbeat", serverData?.address],
     async () => {
       if (!serverData?.address) return;
@@ -198,7 +202,7 @@ const useGameSense = (): ReturnType => {
     },
     {
       refetchInterval: 10_000,
-      refetchIntervalInBackground: false,
+      refetchIntervalInBackground: true,
     }
   );
 
@@ -248,37 +252,15 @@ const useGameSense = (): ReturnType => {
     await postGameEventAsync({ event: HealthEventIdentifier, value });
   }, []);
 
-  const onBinderUpdateAsync = useCallback(async (value: number) => {
+  const onBinderUpdateAsync = useCallback(async (colors: RgbColor[]) => {
     await postContextGameEventAsync({
       event: BinderEventIdentifier,
-      value: value,
       frame: {
-        [ContextFrameZoneOneKey]: {
-          red: 255,
-          green: 105,
-          blue: 180,
-        },
-        [ContextFrameZoneTwoKey]: {
-          red: 0,
-          green: 255,
-          blue: 180,
-        },
-        [ContextFrameZoneThreeKey]: {
-          // todo: add color picker for these
-          red: 150,
-          green: 255,
-          blue: 0,
-        },
-        [ContextFrameZoneFourKey]: {
-          red: 0,
-          green: 255,
-          blue: 180,
-        },
-        [ContextFrameZoneFiveKey]: {
-          red: 255,
-          green: 105,
-          blue: 180,
-        },
+        [ContextFrameZoneOneKey]: colors[0],
+        [ContextFrameZoneTwoKey]: colors[1],
+        [ContextFrameZoneThreeKey]: colors[2],
+        [ContextFrameZoneFourKey]: colors[1],
+        [ContextFrameZoneFiveKey]: colors[0],
       },
     });
   }, []);
