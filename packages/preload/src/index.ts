@@ -3,6 +3,7 @@
  */
 
 import {contextBridge} from 'electron';
+import * as fs from 'fs/promises';
 
 import type {BinaryLike} from 'crypto';
 import {createHash} from 'crypto';
@@ -40,5 +41,28 @@ contextBridge.exposeInMainWorld('nodeCrypto', {
     const hash = createHash('sha256');
     hash.update(data);
     return hash.digest('hex');
+  },
+});
+
+/**
+ * Gamesense Server info.
+ * @example
+ * window.gamesense.getJson()
+ */
+contextBridge.exposeInMainWorld('gamesense', {
+  getServerData: async () => {
+    const programDataPath = process.env['ProgramData'];
+    const steelSeriesEngineJsonPath = `${programDataPath}\\SteelSeries\\SteelSeries Engine 3\\coreProps.json`;
+    try {
+      await fs.stat(steelSeriesEngineJsonPath);
+      const fileContent = await fs.readFile(steelSeriesEngineJsonPath, {
+        encoding: 'utf-8',
+      });
+      return JSON.parse(fileContent);
+    }
+    catch (error) {
+      console.error(error);
+      return undefined;
+    }
   },
 });

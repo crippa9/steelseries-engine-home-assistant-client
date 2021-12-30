@@ -11,4 +11,10 @@ interface Window {
      * window.nodeCrypto('data')
      */
     readonly nodeCrypto: { sha256sum(data: import("crypto").BinaryLike): string; };
+    /**
+     * Gamesense Server info.
+     * @example
+     * window.gamesense.getJson()
+     */
+    readonly gamesense: { getServerData: () => Promise<any>; };
 }
