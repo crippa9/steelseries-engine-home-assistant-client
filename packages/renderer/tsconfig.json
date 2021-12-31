@@ -8,12 +8,10 @@
       ]
     },
     "lib": ["ESNext", "dom", "dom.iterable"],
-    "jsx": "react",
+    "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true
   },
-
   "include": [
-    "src/**/*.vue",
     "src/**/*.ts",
     "src/**/*.tsx",
     "types/**/*.d.ts",

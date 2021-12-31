@@ -15,6 +15,7 @@
   "rules": {
     "quotes": ["warn", "double"],
     "no-unused-vars": "warn",
-    "comma-dangle": "off"
+    "comma-dangle": "off",
+    "react/react-in-jsx-scope": "off"
   }
 }

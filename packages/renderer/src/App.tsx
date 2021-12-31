@@ -2,32 +2,17 @@ import React, { useEffect, useState } from "react";
 import type { RgbColor } from "./api/use-gamesense";
 import useGameSense, { Status } from "./api/use-gamesense";
 import type { RGBColor } from "react-color";
-import { CirclePicker } from "react-color";
+import Zone from "./components/zone/zone";
+import useBlinker from "./components/zone/hooks/use-blinker";
+
+const ANIMATION_POLL_RATE_IN_MS = 500;
+const ANIMATION_DURATION_IN_MS = 2000;
 
 const reactColorToHookColor = (reactColor: RGBColor): RgbColor => ({
   red: reactColor.r,
   green: reactColor.g,
   blue: reactColor.b,
 });
-
-type ZoneColorPickerProps = {
-  setColor: (color: RGBColor) => void;
-  color: RGBColor;
-  title: string;
-};
-
-function ZoneColorPicker({ setColor, color, title }: ZoneColorPickerProps) {
-  return (
-    <div>
-      <h2>{title}</h2>
-      <p>TODO: Add ability to send blink events to zone</p>
-      <CirclePicker
-        color={color}
-        onChangeComplete={(colorResult) => setColor(colorResult.rgb)}
-      />
-    </div>
-  );
-}
 
 const App: React.FC = () => {
   const [zoneOneColor, setZoneOneColor] = useState<RGBColor>({
@@ -47,13 +32,33 @@ const App: React.FC = () => {
   });
   const { onBinderUpdateAsync, onResetGameSetupAsync, status } = useGameSense();
 
+  const { start, isBlinking, blinkerColorOverride } = useBlinker(
+    1,
+    ANIMATION_DURATION_IN_MS,
+    ANIMATION_POLL_RATE_IN_MS
+  );
+
   useEffect(() => {
+    if (blinkerColorOverride) {
+      onBinderUpdateAsync([
+        reactColorToHookColor(blinkerColorOverride),
+        reactColorToHookColor(blinkerColorOverride),
+        reactColorToHookColor(blinkerColorOverride),
+      ]);
+      return;
+    }
     onBinderUpdateAsync([
       reactColorToHookColor(zoneOneColor),
       reactColorToHookColor(zoneTwoColor),
       reactColorToHookColor(zoneThreeColor),
     ]);
-  }, [zoneOneColor, zoneTwoColor, zoneThreeColor, onBinderUpdateAsync]);
+  }, [
+    blinkerColorOverride,
+    zoneOneColor,
+    zoneTwoColor,
+    zoneThreeColor,
+    onBinderUpdateAsync,
+  ]);
 
   return (
     <>
@@ -69,24 +74,46 @@ const App: React.FC = () => {
               Reset game setup
             </button>
           </div>
-          <ZoneColorPicker
-            title="Zone 1"
-            setColor={setZoneOneColor}
-            color={zoneOneColor}
-          />
-          <ZoneColorPicker
-            title="Zone 2"
-            setColor={setZoneTwoColor}
-            color={zoneTwoColor}
-          />
-          <ZoneColorPicker
-            title="Zone 3"
-            setColor={setZoneThreeColor}
-            color={zoneThreeColor}
-          />
+          <div>
+            <button disabled={isBlinking} onClick={start}>
+              {isBlinking ? "Blinking..." : "Start blinking"}
+            </button>
+          </div>
+          <div className="zones-container" style={{ display: "flex" }}>
+            <Zone
+              title="Zone 1"
+              setColor={setZoneOneColor}
+              color={zoneOneColor}
+              disabled={isBlinking}
+            />
+            <Zone
+              title="Zone 2"
+              setColor={setZoneTwoColor}
+              color={zoneTwoColor}
+              disabled={isBlinking}
+            />
+            <Zone
+              title="Zone 3"
+              setColor={setZoneThreeColor}
+              color={zoneThreeColor}
+              disabled={isBlinking}
+            />
+            <Zone
+              title="Zone 2"
+              setColor={setZoneTwoColor}
+              color={zoneTwoColor}
+              disabled={isBlinking}
+            />
+            <Zone
+              title="Zone 1"
+              setColor={setZoneOneColor}
+              color={zoneOneColor}
+              disabled={isBlinking}
+            />
+          </div>
         </>
       ) : (
-        <>Steelseries Game Engine not running</>
+        <p>Steelseries Game Engine not running</p>
       )}
     </>
   );
